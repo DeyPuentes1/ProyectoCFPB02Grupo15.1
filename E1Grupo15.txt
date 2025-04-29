@@ -2,6 +2,6 @@
 
 
 --Deissy Gomez Puentes
-
+--Cristian Camilo Alvarez 
 --Repositorio:
 https://github.com/DeyPuentes1/ProyectoCFPB02Grupo15.1.git
