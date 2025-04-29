@@ -4,4 +4,4 @@
 --Deissy Gomez Puentes
 
 --Repositorio:
-https://github.com/lvalcarcel95/ProyectoCFPB02Grupo15.git
+https://github.com/DeyPuentes1/ProyectoCFPB02Grupo15.1.git
