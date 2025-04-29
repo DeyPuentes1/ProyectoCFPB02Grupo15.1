@@ -42,12 +42,17 @@ public class Main {
                 GenerateInfoFiles.createSerializedSalesFile(3, id);
             }
 
-            // Valida archivos generados y visualizar los archivos generados en consola
+            // Valida archivos generados de tipó csv y ser, permite visualizar los archivos generados en consola
             GenerateInfoFiles.procesarArchivosVentas();
             GenerateInfoFiles.procesarArchivosVentasSerializados();
             GenerateInfoFiles.visualizarArchivosSerializados();
 
-            System.out.println("Archivos de prueba generados y validados correctamente");
+            // Generación de reportes de ventas de vendedores y productos
+            GenerateInfoFiles.generateVendorSalesReport();  // Reporte de ventas por vendedor
+            GenerateInfoFiles.generateProductSalesReport(); // Reporte de ventas por producto
+
+            System.out.println("Archivos de prueba generados, validados y reportes generados correctamente");
+
 
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Error generando o procesando archivos de prueba, detalle: " + e.getMessage());

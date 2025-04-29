@@ -197,7 +197,7 @@ public class GenerateInfoFiles {
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 reader.readLine(); // Saltar encabezado: ProductoId;Cantidad
 
-                // Extrae ID del vendedor del nombre del archivo, ej: ventas_123456.csv
+                // Extrae ID del nombre del archivo, ej: ventas_123456.csv
                 String fileName = file.getName();
                 String idStr = fileName.substring("ventas_".length(), fileName.indexOf(".csv"));
 
@@ -322,6 +322,160 @@ public class GenerateInfoFiles {
                 System.err.println("Error leyendo " + file.getName() + ": " + e.getMessage());
             }
         }
+    }
+
+    // Mapa global para almacenar la cantidad de productos vendidos
+    private static final Map<String, Integer> productosVendidos = new HashMap<>();
+
+    /**
+     * Genera un archivo CSV con el reporte de ventas por vendedor, ordenado por la cantidad de dinero recaudado.
+     * @throws IOException si ocurre un error de escritura.
+     **/
+    public static void generateVendorSalesReport() throws IOException {
+        Path filePath = Constants.DATA_FOLDER.resolve("reporte_vendedores.csv");
+        try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
+            writer.write("Vendedor;TotalRecaudado\n");
+
+            // Calcula la cantidad total recaudada por cada vendedor
+            Map<Long, Double> ventasPorVendedor = new HashMap<>();
+            File folder = Constants.DATA_FOLDER.toFile();
+            File[] files = folder.listFiles((dir, name) -> name.startsWith("ventas_") && name.endsWith(".csv"));
+            if (files != null) {
+                for (File file : files) {
+                    long idVendedor = Long.parseLong(file.getName().substring("ventas_".length(), file.getName().indexOf(".csv")));
+                    double totalVentas = 0;
+                    try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                        reader.readLine(); // Saltar encabezado
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            String[] parts = line.split(";");
+                            String productoId = parts[0];
+                            int cantidad = Integer.parseInt(parts[1]);
+                            double precio = getProductPrice(productoId);
+                            totalVentas += cantidad * precio;
+
+                            // Actualizar cantidad de productos vendidos
+                            productosVendidos.put(productoId, productosVendidos.getOrDefault(productoId, 0) + cantidad);
+                        }
+                    }
+
+                    ventasPorVendedor.put(idVendedor, totalVentas);
+                }
+            }
+
+            // Ordenar vendedores por total recaudado (de mayor a menor)
+            List<Map.Entry<Long, Double>> vendedorList = new ArrayList<>(ventasPorVendedor.entrySet());
+            vendedorList.sort((entry1, entry2) -> Double.compare(entry2.getValue(), entry1.getValue()));
+
+            // Escribir los datos en el archivo CSV
+            for (Map.Entry<Long, Double> entry : vendedorList) {
+                writer.write(String.format("%s;%.2f\n", vendedoresMap.get(entry.getKey()), entry.getValue()));
+            }
+
+            System.out.println("Reporte de vendedores generado con éxito");
+        }
+    }
+
+    public static void generateProductSalesReport() throws IOException {
+        // Mapa para almacenar la cantidad total vendida de cada producto
+        Map<String, Integer> productosVendidos = new HashMap<>();
+
+        // Procesar los archivos de ventas para acumular la cantidad vendida por producto
+        File folder = Constants.DATA_FOLDER.toFile();
+        File[] files = folder.listFiles((dir, name) -> name.startsWith("ventas_") && name.endsWith(".csv"));
+        if (files == null) return;
+
+        for (File file : files) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                reader.readLine(); // Saltar encabezado: ProductoId;Cantidad
+                String venta;
+                while ((venta = reader.readLine()) != null) {
+                    String[] ventaParts = venta.split(";");
+                    if (ventaParts.length != 2) {
+                        System.err.println("Formato inválido en línea: " + venta + " en archivo: " + file.getName());
+                        continue;
+                    }
+
+                    String productoId = ventaParts[0];
+                    int cantidad;
+                    try {
+                        cantidad = Integer.parseInt(ventaParts[1]);
+                    } catch (NumberFormatException e) {
+                        System.err.println("Cantidad inválida: " + ventaParts[1] + " en archivo: " + file.getName());
+                        continue;
+                    }
+
+                    // Acumular las ventas por producto
+                    productosVendidos.put(productoId, productosVendidos.getOrDefault(productoId, 0) + cantidad);
+                }
+            }
+        }
+
+        // Crear el archivo de reporte CSV
+        Path filePath = Constants.DATA_FOLDER.resolve("reporte_productos.csv");
+        try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
+            writer.write("ProductoId;Nombre;CantidadVendida;Precio\n");
+
+            // Obtener los productos y ordenarlos por cantidad vendida de mayor a menor
+            List<Map.Entry<String, Integer>> listaProductos = new ArrayList<>(productosVendidos.entrySet());
+            listaProductos.sort((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue())); // Orden descendente por cantidad
+
+            // Escribir los productos al archivo CSV
+            for (Map.Entry<String, Integer> entry : listaProductos) {
+                String productoId = entry.getKey();
+                int cantidadVendida = entry.getValue();
+
+                // Buscar el nombre y el precio del producto usando el ID
+                String nombreProducto = getProductNameById(productoId);
+                int precioProducto = getProductPriceById(productoId);
+
+                writer.write(String.format("%s;%s;%d;%d\n", productoId, nombreProducto, cantidadVendida, precioProducto));
+            }
+
+            System.out.println("Reporte de productos generado exitosamente");
+        }
+    }
+
+    // Método para obtener el nombre del producto por su ID
+    private static String getProductNameById(String productId) throws IOException {
+        Path path = Constants.DATA_FOLDER.resolve("productos.csv");
+        try (BufferedReader reader = Files.newBufferedReader(path)) {
+            reader.readLine(); // Saltar encabezado: ProductoId;Nombre;Precio
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(";");
+                if (parts[0].equals(productId)) {
+                    return parts[1];
+                }
+            }
+        }
+        return "Desconocido";
+    }
+
+    // Método para obtener el precio del producto por su ID
+    private static int getProductPriceById(String productId) throws IOException {
+        Path path = Constants.DATA_FOLDER.resolve("productos.csv");
+        try (BufferedReader reader = Files.newBufferedReader(path)) {
+            reader.readLine(); // Saltar encabezado: ProductoId;Nombre;Precio
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(";");
+                if (parts[0].equals(productId)) {
+                    return Integer.parseInt(parts[2]);
+                }
+            }
+        }
+        return 0;
+    }
+
+
+    /**
+     * Obtiene el precio del producto basado en su ID.
+     * @param productoId El ID del producto.
+     * @return El precio del producto.
+     **/
+    private static double getProductPrice(String productoId) {
+        return 10000 + random.nextInt(990000);
     }
 
 
