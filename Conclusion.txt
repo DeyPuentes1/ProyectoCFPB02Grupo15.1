@@ -1,0 +1,21 @@
+1. Lo aprendido durante el desarrollo del proyecto
+
+Durante el desarrollo del proyecto se reforzaron y aplicaron buenas prácticas de programación en Java, como el uso correcto del manejo de excepciones, diseño limpio y legible del código, separación de responsabilidades y documentación clara mediante JavaDoc. Se profundizó en el trabajo con archivos de texto (planos y serializados), incluyendo la lectura, escritura y validación de datos. Además, se trabajó con estructuras de datos como listas, mapas y colecciones ordenadas para generar reportes consolidados y ordenados.
+
+Adicionalmente, resaltamos la importancia del trabajo colaborativo y el respeto a los lineamientos de equipo, así como la concientización de la implementación de buenas prácticas.
+
+Manejo de GitHub y Git Flow
+
+2. Posibles aplicaciones en la vida profesional
+
+Se asemeja mucho al trabajo real en el ciclo de vida del software, donde se plantean progresivamente requerimientos y donde el trabajo siempre es colaborativo. Adicionalmente, la aplicación de buenas prácticas de desarrollo durante los entregables es fundamental.
+
+3. Dificultades presentadas durante el desarrollo del proyecto
+
+Entre las principales dificultades se encontraron:
+
+Manejo de archivos inconsistentes o mal formateados, lo que exigió implementar validaciones para garantizar la integridad de la funcionalidad.
+Sincronización y consolidación de múltiples archivos por vendedor, especialmente para asegurar que los reportes reflejaran adecuadamente la suma total de ventas.
+Diseño del código para soportar escalabilidad sin comprometer la legibilidad y mantenibilidad, dado que la cantidad de archivos y registros puede crecer significativamente.
+Separación clara de responsabilidades entre generación de datos, procesamiento y reporte, sin introducir dependencia circular entre clases.
+Las buenas prácticas del trabajo colaborativo, como los acuerdos de equipo y el manejo de Git Flow.
